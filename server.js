@@ -1,10 +1,12 @@
-
 const express = require('express');
 const router = express.Router();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
-const {ShoppingList, Recipes} = require('./models');
+const {
+  ShoppingList,
+  Recipes
+} = require('./models');
 
 const jsonParser = bodyParser.json();
 const app = express();
@@ -34,7 +36,7 @@ app.get('/shopping-list', (req, res) => {
 app.post('/shopping-list', jsonParser, (req, res) => {
   // ensure `name` and `budget` are in request body
   const requiredFields = ['name', 'budget'];
-  for (let i=0; i<requiredFields.length; i++) {
+  for (let i = 0; i < requiredFields.length; i++) {
     const field = requiredFields[i];
     if (!(field in req.body)) {
       const message = `Missing \`${field}\` in request body`
@@ -51,6 +53,19 @@ app.post('/shopping-list', jsonParser, (req, res) => {
 app.get('/recipes', (req, res) => {
   res.json(Recipes.get());
 })
+
+app.post('/recipes', jsonParser, (request, response) => {
+  const reqFields = ['name', 'ingredients'];
+  for (var i = 0; i < reqFields.length; i++) {
+    if (!(reqFields[i] in request.body)) {
+      const message = `Missing \`${reqFields[i]}\` in request body`
+      console.error(message);
+      return res.status(400).send(message);
+    }
+    const item = Recipes.create(request.body.name, request.body.ingredients);
+    response.status(201).json(item);
+  }
+});
 
 app.listen(process.env.PORT || 8080, () => {
   console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
